@@ -26,17 +26,19 @@ def retrieve_node(state:Graph_State):
 
 def generate_node(state:Graph_State):
     
-    get_simplify_manifesto_prompt_template="""Given the following manifesto text, simplify it by converting complex or jargon-heavy language into 
+    get_simplify_manifesto_prompt_template="""Given the following manifesto text from the {CANDIDATE} related to {DOMAIN}, simplify it by converting complex or jargon-heavy language into 
     easy-to-understand terms while retaining the original meaning. 
     Break down any detailed policy proposals into concise and clear bullet points, 
-    and explain key concepts in a voter-friendly manner. 
-    If possible, include simple real-world examples to clarify the impact of the policies."
+    and explain key concepts in a voter-friendly manner.
+    If possible, include simple real-world examples to clarify the impact of the policies.
+        Party: {CANDIDATE}
+        Domain: {DOMAIN}
         Manifesto Text:{CONTEXT}
     Output Requirements:
-    Simplify complex language.
-    Present key points as bullet points.
-    Maintain original meaning and intent.
-    Provide explanations or examples for difficult concepts.
+        Simplify complex language.
+        Present key points as bullet points.
+        Maintain original meaning and intent.
+        Provide explanations or examples for difficult concepts.
     If the answer is not found in the context, kindly state "I don't know."
     Don't try to make up an answer.
     """
@@ -44,13 +46,13 @@ def generate_node(state:Graph_State):
     get_simplify_manifesto_prompt=ChatPromptTemplate.from_template(get_simplify_manifesto_prompt_template)
     
     get_simplify_manifesto_chain = (
-    {"CONTEXT": RunnablePassthrough()}   
+    {"CONTEXT": RunnablePassthrough(), "CANDIDATE": RunnablePassthrough(), "DOMAIN": RunnablePassthrough()}   
     | get_simplify_manifesto_prompt
     | get_llm()
     | StrOutputParser()
     )
 
-    generation=get_simplify_manifesto_chain.invoke({"CONTEXT": state["documents"]})
+    generation=get_simplify_manifesto_chain.invoke({"CONTEXT": state["documents"], "CANDIDATE": state["candidate"], "DOMAIN": state["domain"]})
   
     global generated_response
   
